@@ -1,0 +1,1 @@
+"""Traduz FastAPI application package."""
