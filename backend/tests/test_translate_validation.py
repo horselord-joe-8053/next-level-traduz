@@ -11,6 +11,12 @@ def test_translate_rejects_empty_text() -> None:
     assert response.status_code == 422
 
 
+def test_translate_rejects_whitespace_only_text() -> None:
+    client = TestClient(create_app())
+    response = client.post("/translate", json={"text": "   \n\t  "})
+    assert response.status_code == 422
+
+
 def test_translate_rejects_text_over_5000_chars() -> None:
     client = TestClient(create_app())
     response = client.post("/translate", json={"text": "a" * 5001})
