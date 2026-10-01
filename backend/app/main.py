@@ -5,7 +5,7 @@ from functools import lru_cache
 import httpx
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.config import Settings, get_settings
 from app.llm import Translator, build_translator
@@ -15,6 +15,16 @@ MAX_INPUT_CHARS = 5000
 
 class TranslateRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=MAX_INPUT_CHARS)
+
+    @field_validator("text")
+    @classmethod
+    def text_must_be_non_blank_after_strip(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("text must not be empty or whitespace-only")
+        if len(stripped) > MAX_INPUT_CHARS:
+            raise ValueError(f"text must not exceed {MAX_INPUT_CHARS} characters")
+        return stripped
 
 
 class TranslateResponse(BaseModel):
